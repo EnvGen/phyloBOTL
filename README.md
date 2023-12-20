@@ -9,7 +9,7 @@
 
 3. clone the repository:
 
-         git clone https://github.com/lfdelzam/phyloBOTL
+         git clone https://github.com/EnvGen/phyloBOTL
 
 ## Installation option 1 - step by step, in case you already have some programs installed or databases downloaded
 Make sure you are using the same version as indicated hereafter:
