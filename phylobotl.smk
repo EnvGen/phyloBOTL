@@ -396,9 +396,7 @@ rule vis_co:
             s=config["synteny_visualization"]["locus_size_window"],
             f=config["synteny_visualization"]["max_n_genomes_per_fig"],
             o=config["output_dir"]+"/co_localization_figures",
-            l=" Enriched",i=config["input"]["File_list"],
-            g1=config["input"]["group_1_name"], l1=config["input"]["group_1_label"],
-            g2=config["input"]["group_2_name"]
+            l=" Enriched",i=config["input"]["File_list"]
     threads: config["threads"]
     resources:
              runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=6400*config["threads"]
@@ -406,8 +404,7 @@ rule vis_co:
     conda: "R_env"
     shell:  """
                 Rscript support/synteny_visual.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
-                -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i} \
-                -g1 {params.g1} -l1 {params.l1} -g2 {params.g2}
+                -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i}
             """
 
 rule DNA_selected_orthologues:
@@ -541,9 +538,7 @@ rule vis_co_depleted:
             s=config["synteny_visualization"]["locus_size_window"],
             f=config["synteny_visualization"]["max_n_genomes_per_fig"],
             o=config["output_dir"]+"/co_localization_figures_Depleted",
-            l=" Depleted",i=config["input"]["File_list"],
-            g1=config["input"]["group_1_name"], l1=config["input"]["group_1_label"],
-            g2=config["input"]["group_2_name"]
+            l=" Depleted",i=config["input"]["File_list"]
     threads: config["threads"]
     resources:
               runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
@@ -551,8 +546,7 @@ rule vis_co_depleted:
     conda: "R_env"
     shell:  """
                 Rscript support/synteny_visual.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
-                -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i} \
-                -g1 {params.g1} -l1 {params.l1} -g2 {params.g2}
+                -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i}
             """
 
 rule DNA_selected_orthologues_depleted:
