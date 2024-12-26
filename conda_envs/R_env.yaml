@@ -5,8 +5,10 @@ channels:
   - anaconda
 
 dependencies:
-  - r-base=4.2.0
+  - r-base=4.2.2
   - cmake
   - r-remotes
   - libgit2
   - pkg-config
+  - r-matrix
+  - r-mass

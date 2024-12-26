@@ -1,0 +1,53 @@
+workdir: /mnt/isilon/projects/ecosystem_biology/01_Infectome/phyloBOTL
+threads: 24
+memory_per_cpu: 4571
+input:
+  File_list: GENOME_LIST.txt
+  group_1_label: CRC
+  group_1_name: CRC
+  group_2_label: Oral
+  group_2_name: Oral
+  Special_group_name: None
+tree_file: rooted_boot.treefile
+tree_using: iqtree
+iqtree:
+  iqtree_params: "-m GTR+I+G -B 1000 -bnni"
+  iqtree_rooted: "TRUE"
+FastTree_params: "-gtr -nt -gamma"
+GTDB:
+  gtdb_params: "--bacteria"
+  taxa_filter: p__Proteobacteria
+  outgroup_taxon: p__Firmicutes
+KSNP:
+  kSNP4_param_phylo_method: ML
+  kSNP4_param_genome_fraction: core
+  Path_to_kSNP4pkg: /abs/path/to/kSNP4pkg
+Prokka_params: "--rawproduct --quiet"
+Proteome_dir: proteome
+orthology:
+  orthofinder_parameters: "-f proteome -a 4 -S diamond -og"
+  ortholog_count_table: Orthogroups.GeneCount.tsv
+  ortholog_table: Orthogroups.tsv
+  path_to_orthologs_sequences: Orthologues/Results_dir/Orthogroup_Sequences
+up_to_Eggnog_all_orthologs: True
+Eggnog_all_orthologs_selection: longest
+path_to_eggnog_db: /mnt/isilon/projects/ecosystem_biology/01_Infectome/phyloBOTL/DATABASES/eggnog_mapper_env/data
+PHYLOGLM:
+  phyloglm_Bootnumber: 0
+  p_adj_value_cutoff: 0.05
+  orthologue_ratio_in_genome_dataset: 0.95
+  phyloglm_btol_number: 10
+  phyloglm_outfiles_prefix: Vv
+synteny_visualization:
+  present_in_at_least_n_genomes: 10
+  locus_size_window: 40000
+  max_n_genomes_per_fig: 22
+tax_specific_protein_annotation:
+  status: false
+  path_to_database: /abs/path/to/Your_Specific_database.fasta
+genomad:
+  include: false
+  path_to_genomad_db: /abs/path/to/genomad_db/
+  Genomad_score_cut_off: 0.8
+  params_genomad: "--cleanup --conservative"
+output_dir: Results

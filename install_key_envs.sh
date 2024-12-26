@@ -5,18 +5,17 @@
 #Make sure you have the latest conda version
 eval "$(conda shell.bash hook)"
 conda activate base
-conda install conda=23.7.3 -y
+#conda install conda=23.7.3 -y
 #python version in base > 3
 #avoid conflicts by setting this:
 
 
-
 #R_env
 eval "$(conda shell.bash hook)"
-conda env create -f conda_env/R_env.yaml -y
+conda env create -f conda_envs/R_env.yaml -y
 conda activate R_env
 numberofcpus=$2
-Rscript --vanilla Install_Rpackages.R $numberofcpus
+Rscript --vanilla support/Install_Rpackages.R $numberofcpus
 conda deactivate
 
 #Install snakemake https://snakemake.readthedocs.io/en/stable/getting_started/installation.html

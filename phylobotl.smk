@@ -3,7 +3,7 @@ import os
 #Usage: snakemake -s phylobotl.smk --use-conda --conda-frontend conda --cores 20
 #Optional: --use-envmodules --use-singularity
 
-configfile: "./support/config_phylobotl.json"
+configfile: "./support/config_phylobotl.yaml"
 workdir: config["workdir"]
 
 def read_File_list(myfile):
@@ -60,7 +60,7 @@ rule Genomes:
     output: expand("Genomes/{s}.fa", s = strains)
     threads: 1
     resources:
-        runtime = lambda wildcards, attempt: attempt*60 * 4, mem_mb=6400	
+        runtime = lambda wildcards, attempt: attempt*60 * 4, mem_mb=config["memory_per_cpu"]	
     shell:  """
                 cat {input} | while read line
                         do
@@ -86,7 +86,7 @@ if config["tree_using"] == "gtdb":
   		params: txf=config["GTDB"]["taxa_filter"], og=config["GTDB"]["outgroup_taxon"], gt=config["GTDB"]["gtdb_params"]
   		threads: config["threads"]
 		resources:
-        		runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+        		runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
   		conda: "gtdb_env"
   		shell: """
              		gtdbtk de_novo_wf --genome_dir Genomes --taxa_filter {params.txf} --outgroup_taxon {params.og} {params.gt} --out_dir GTDBTK_out --extension .fa --cpus {threads}
@@ -100,7 +100,7 @@ elif config["tree_using"] == "ani":
       output: "fastANI_output/results"
       threads: config["threads"]
       resources:
-                runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+                runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
       container: "docker://staphb/fastani"
       conda: "conda_envs/fastani.yaml"
       shell: """
@@ -117,7 +117,7 @@ elif config["tree_using"] == "ksnp":
     params: m=config["KSNP"]["kSNP4_param_phylo_method"], f=config["KSNP"]["kSNP4_param_genome_fraction"], k=config["KSNP"]["Path_to_kSNP4pkg"]
     threads: config["threads"]
     resources:
-              runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+              runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     container: "docker://staphb/ksnp4"
     shell: """
                export PATH="{params.k}:$PATH"
@@ -133,7 +133,7 @@ rule prokka:
   params: f="Genomes/{s}.fa", dout="Prokka_out", prx="{s}" ,p=config["Prokka_params"]
   threads: config["threads"]
   resources:
-          runtime = lambda wildcards, attempt: attempt*60 *10, mem_mb=6400*config["threads"]
+          runtime = lambda wildcards, attempt: attempt*60 *10, mem_mb=config["memory_per_cpu"]*config["threads"]
   container: "docker://staphb/prokka"
   conda: "conda_envs/prokka.yaml"
   shell:  """
@@ -146,7 +146,7 @@ rule Proteome_dir:
   params: d=config["Proteome_dir"], s="{s}"
   threads: 1
   resources:
-          runtime = lambda wildcards, attempt: attempt*60 *0.2, mem_mb=6400	
+          runtime = lambda wildcards, attempt: attempt*60 *0.2, mem_mb=config["memory_per_cpu"]	
   shell: """
             mv Prokka_out/{params.s}.faa {params.d}/.
          """
@@ -157,7 +157,7 @@ rule Gene_dir:
   params: s="{s}"
   threads: 1
   resources:
-           runtime = lambda wildcards, attempt: attempt*60 *0.2, mem_mb=6400
+           runtime = lambda wildcards, attempt: attempt*60 *0.2, mem_mb=config["memory_per_cpu"]
   shell: """
             mv Prokka_out/{params.s}.ffn Genes/.
          """
@@ -168,7 +168,7 @@ rule annot_dir:
   params: s="{s}"
   threads: 1
   resources:
-          runtime = lambda wildcards, attempt: attempt*60 *0.5, mem_mb=6400
+          runtime = lambda wildcards, attempt: attempt*60 *0.5, mem_mb=config["memory_per_cpu"]
   shell: """
             sed '/^##FASTA/q' Prokka_out/{params.s}.gff > Annotations/GFF_files/{params.s}.gff
             egrep -v '^(ACCESSION|VERSION)' Prokka_out/{params.s}.gbk > Annotations/GBK_files/{params.s}.gbk
@@ -180,7 +180,7 @@ rule pangenome_graph:
      threads: config["threads"]
      conda: "conda_envs/ppanggolin.yaml"
      resources:
-           runtime = lambda wildcards, attempt: attempt*60 *20, mem_mb=6400*config["threads"]
+           runtime = lambda wildcards, attempt: attempt*60 *20, mem_mb=config["memory_per_cpu"]*config["threads"]
      shell:  """
                ls {input} | while read f; do name=$(basename $f); n=$( echo $name | sed s/'\.gbk'//); echo "$n\t$f"; done > annot_list
                ppanggolin all --anno annot_list -c {threads} -o Pangenome_graph -f
@@ -194,7 +194,7 @@ if config["tree_using"] == "FastTree" or config["tree_using"] == "iqtree":
     threads: config["threads"]
     conda: "conda_envs/ppanggolin.yaml"
     resources:
-           runtime = lambda wildcards, attempt: attempt*60 *20, mem_mb=6400*config["threads"]
+           runtime = lambda wildcards, attempt: attempt*60 *20, mem_mb=config["memory_per_cpu"]*config["threads"]
     shell:  "ppanggolin msa -p Pangenome_graph/pangenome.h5 --partition core --source dna -o Pangenome_graph/MSA --phylo -c {threads} -f "
 
 if config["tree_using"] == "FastTree":
@@ -203,7 +203,7 @@ if config["tree_using"] == "FastTree":
     output: config["tree_file"]
     threads: 1
     resources:
-            runtime = lambda wildcards, attempt: attempt*60 *30, mem_mb=6400
+            runtime = lambda wildcards, attempt: attempt*60 *30, mem_mb=config["memory_per_cpu"]
     params: config["FastTree_params"]
     container: "docker://staphb/fasttree"
     conda: "conda_envs/fastTree2.yaml"
@@ -219,7 +219,7 @@ if config["tree_using"] == "iqtree":
     container: "docker://staphb/iqtree2"
     conda: "conda_envs/iqtree.yaml"
     resources:
-             runtime = lambda wildcards, attempt: attempt*60 *60, mem_mb=6400*config["threads"]
+             runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     envmodules:"bioinfo-tools/iqtree"
     shell:  """
               mkdir -p {params.o}
@@ -245,7 +245,7 @@ rule orthofinder:
           g="Orthologues/Results_dir/Orthogroups/Orthogroups.tsv"
   container: "docker://davidemms/orthofinder"
   conda: "conda_envs/orthofinder.yaml"
-  resources: slurm_extra="-C fat", runtime = lambda wildcards, attempt: attempt*60 *72, mem_mb=6400*config["threads"]
+  resources: runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
   shell:  """
               orthofinder -t {threads} -o Orthologues -n dir {params.p}
               cp {params.f} {output.f}
@@ -260,7 +260,7 @@ if config["up_to_Eggnog_all_orthologs"]:
         output: "Annotations/Rep_seq_Orth_groups/report.txt"
         threads: 1 
         resources:
-                runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+                runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
         params:i=config["orthology"]["path_to_orthologs_sequences"],
                o="Annotations/Rep_seq_Orth_groups",
                c=config["Eggnog_all_orthologs_selection"]
@@ -273,7 +273,7 @@ if config["up_to_Eggnog_all_orthologs"]:
         output: "Annotations/Rep_seq_Orth_groups/selected_seq_OGs.fasta"
         threads: 4
         resources:
-              runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400*4
+              runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]*4
         params: i=config["workdir"]+"/Annotations/Rep_seq_Orth_groups/selection/"
         shell: 	"""
 		              ls {params.i} | while read f
@@ -290,7 +290,7 @@ if config["up_to_Eggnog_all_orthologs"]:
         params: db=config["path_to_eggnog_db"], o="Annotations/Rep_seq_Orth_groups/All_EggNOG"
         conda: "eggnog_mapper_env"
         resources:
-            runtime = lambda wildcards, attempt: attempt*60 *72, mem_mb=6400*config["threads"]
+            runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
         shell:  """
                     mkdir -p {params.o}
 
@@ -303,7 +303,7 @@ if config["up_to_Eggnog_all_orthologs"]:
 
                               emapper.py -i {input} -o selected --output_dir {params.o} --cpu {threads} --data_dir {params.db} -m diamond --resume
                           else
-                              emapper.py -i {input} -o selected --output_dir {params.o} --cpu {threads} --data_dir {params.db} -m diamond
+                              emapper.py -i {input} -o selected --output_dir {params.o} --cpu {threads} --data_dir {params.db} -m diamond --resume
                           fi
                     else
                         echo "INFO: $fileanot already done"
@@ -317,7 +317,7 @@ rule converting_orthfiles:
   output: o="phyloglm_input/Orthogroups.tsv", p="phyloglm_input/Annotations.txt"
   threads: 1
   resources:
-           runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+           runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
   shell: "bash support/converting.sh {input.o} {output.o} {output.p}"
 
 if config["tree_using"] == "ani":
@@ -341,12 +341,12 @@ if config["tree_using"] == "ani":
     container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     resources:
-             runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+             runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     shell:  """
-              Rscript support/phylobotl.R -q {params.q} -l {params.l} -g {input.g} -N {input.n} \
+              Rscript support/phylobotl3.R -q {params.q} -l {params.l} -g {input.g} -N {input.n} \
               -b {params.b} -a {params.a} -o {params.o} -r {params.r} -s {input.s} -m {input.m} \
               -i {input.i} -k {params.k} -y {params.g1} -w {params.l1} \
-              -z {params.g2} -v {params.l2} -e {params.e}
+              -z {params.g2} -d {params.l2} -e {params.e} -p {threads}
             """
 
 else:
@@ -361,7 +361,7 @@ else:
             tr=config["output_dir"]+"/tree/"+config["PHYLOGLM"]["phyloglm_outfiles_prefix"]+"_Cleaned_tree.txt"
     threads: config["threads"]
     resources:
-                 runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+                 runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     params: b=config["PHYLOGLM"]["phyloglm_Bootnumber"], q=config["PHYLOGLM"]["p_adj_value_cutoff"],
             r=config["PHYLOGLM"]["orthologue_ratio_in_genome_dataset"],
             e=config["input"]["Special_group_name"],
@@ -372,9 +372,9 @@ else:
     container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     shell:  """
-              Rscript support/phylobotl.R -q {params.q} -l {params.l} -g {input.g} -t {input.t} -b {params.b} -a {params.a} \
+              Rscript support/phylobotl3.R -q {params.q} -l {params.l} -g {input.g} -t {input.t} -b {params.b} -a {params.a} \
               -o {params.o} -r {params.r} -s {input.s} -m {input.m} -i {input.i} -k {params.k} \
-              -y {params.g1} -w {params.l1} -z {params.g2} -v {params.l2} -e {params.e}
+              -y {params.g1} -w {params.l1} -z {params.g2} -d {params.l2} -e {params.e} -p {threads}
             """
 
 rule orthologues_gff:
@@ -383,7 +383,7 @@ rule orthologues_gff:
     params: "Annotations/GFF_files"
     threads:1
     resources:
-              runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+              runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
     shell: "python support/parse_gff.py -i {params} -l {input.t} -o Annotations/Orthologues"
 
 ## Enriched section
@@ -399,11 +399,11 @@ rule vis_co:
             l=" Enriched",i=config["input"]["File_list"]
     threads: config["threads"]
     resources:
-             runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=6400*config["threads"]
+             runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     shell:  """
-                Rscript support/synteny_visual.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
+                Rscript support/synteny_visual2.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
                 -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i}
             """
 
@@ -414,7 +414,7 @@ rule DNA_selected_orthologues:
   params: o=config["output_dir"]+"/Enriched_Orthologues_DNA_sequences"
   threads: 1
   resources:
-          runtime = lambda wildcards, attempt: attempt*60 *8, mem_mb=6400
+          runtime = lambda wildcards, attempt: attempt*60 *8, mem_mb=config["memory_per_cpu"]
   shell: "python support/DNA_selected_orthologues.py -i {input.i} -d Genes -g {input.g} -o {params.o}"
 
 
@@ -429,7 +429,7 @@ rule eggNOG_enriched:
             db=config["path_to_eggnog_db"]
     conda: "eggnog_mapper_env"
     resources:
-               runtime = lambda wildcards, attempt: attempt*60 *40, mem_mb=6400*config["threads"]
+               runtime = lambda wildcards, attempt: attempt*60 *40, mem_mb=config["memory_per_cpu"]*config["threads"]
     shell:  """
                 mkdir -p {params.o1}
                 grep -v '#' {input.e} | while read ort; do
@@ -466,7 +466,7 @@ rule eggNOG_loci:
             db=config["path_to_eggnog_db"]
     conda: "eggnog_mapper_env"
     resources:
-              runtime = lambda wildcards, attempt: attempt*60 *40, mem_mb=6400*config["threads"]
+              runtime = lambda wildcards, attempt: attempt*60 *40, mem_mb=config["memory_per_cpu"]*config["threads"]
     shell:  """
                 toprt="no"
                 grep -v '#' {input.l} | while read line; do
@@ -524,7 +524,7 @@ rule enriched_gbk:
   output: config["output_dir"]+"/Annotations/Enriched_GBK_files/Genomes_without_selected_orthologs.txt"
   threads: 1
   resources:
-            runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+            runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
   params: i="Annotations/GBK_files",o=config["output_dir"]+"/Annotations/Enriched_GBK_files"
   shell:  "python support/parse_gbk.py -i {params.i} -e {input.a} -o {params.o} -s {input.s}"
 
@@ -541,11 +541,11 @@ rule vis_co_depleted:
             l=" Depleted",i=config["input"]["File_list"]
     threads: config["threads"]
     resources:
-              runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+              runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     shell:  """
-                Rscript support/synteny_visual.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
+                Rscript support/synteny_visual2.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
                 -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i}
             """
 
@@ -556,7 +556,7 @@ rule DNA_selected_orthologues_depleted:
   params: o=config["output_dir"]+"/Depleted_Orthologues_DNA_sequences"
   threads: 1
   resources:
-            runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+            runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
   shell: "python support/DNA_selected_orthologues.py -i {input.i} -d Genes -g {input.g} -o {params.o}"
 
 
@@ -570,7 +570,7 @@ rule eggNOG_Depleted:
             o2=config["output_dir"]+"/Annotations/Depleted_KEGG",
             db=config["path_to_eggnog_db"]
     resources:
-              runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+              runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     conda: "eggnog_mapper_env"
     shell:  """
                 mkdir -p {params.o1}
@@ -608,7 +608,7 @@ rule eggNOG_loci_Depleted:
             db=config["path_to_eggnog_db"]
     conda: "eggnog_mapper_env"
     resources:
-            runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+            runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     shell:  """
                 toprt="no"
                 grep -v '#' {input.l} | while read line; do
@@ -666,7 +666,7 @@ rule Depleted_gbk:
   output: config["output_dir"]+"/Annotations/Depleted_GBK_files/Genomes_without_selected_orthologs.txt"
   threads: 1
   resources:
-            runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+            runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
   params: i="Annotations/GBK_files",o=config["output_dir"]+"/Annotations/Depleted_GBK_files"
   shell:  "python support/parse_gbk.py -i {params.i} -e {input.a} -o {params.o} -s {input.s}"
 
@@ -678,7 +678,7 @@ if config["genomad"]["include"]:
         params: db=config["genomad"]["path_to_genomad_db"], i="Genomes/{s}.fa", o="GENOMAD/Genomad_output_{s}", p=config["genomad"]["params_genomad"]
         conda: "genomad_env"
         resources:
-                runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+                runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
         shell: "genomad end-to-end {params.p} -t {threads} {params.i} {params.o} {params.db}"
 
     rule parse_genomad:
@@ -688,7 +688,7 @@ if config["genomad"]["include"]:
         output: "GENOMAD/Summary_genomad/Genomes_with_plasmid.tsv"
         threads: 1
         resources:
-                    runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+                    runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
         params: i="GENOMAD", o="GENOMAD/Summary_genomad", c=config["genomad"]["Genomad_score_cut_off"]
         shell: "python support/parse_genomad.py -i {params.i} -f {input.f} -e {input.e} -o {params.o} -c {params.c}"
 
@@ -704,7 +704,7 @@ if config["tax_specific_protein_annotation"]["status"]:
                 d=config["output_dir"]+"/Annotations/Specific_db/Hits_tables"
         threads: config["threads"]
         resources:
-                 runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+                 runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
         conda: "conda_envs/mmseqs.yaml"
         shell:  """
 		    mkdir -p {params.d}
@@ -727,7 +727,7 @@ if config["tax_specific_protein_annotation"]["status"]:
         params: o=config["output_dir"]+"/Annotations/Loci/Specific_db/"
         threads: 1
         resources:
-                  runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=6400
+                  runtime = lambda wildcards, attempt: attempt*60 *5, mem_mb=config["memory_per_cpu"]
         shell:  """
                     python support/parse_Uniprot.py -i {input.i} -c {input.c} -o {params.o}
                 """
@@ -743,7 +743,7 @@ if config["tax_specific_protein_annotation"]["status"]:
                 d=config["output_dir"]+"/Annotations/Specific_db/Depleted/Hits_tables"
         threads: config["threads"]
         resources:
-                  runtime = lambda wildcards, attempt: attempt*60 *48, mem_mb=6400*config["threads"]
+                  runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
         conda: "conda_envs/mmseqs.yaml"
         shell:  """
                     mkdir -p {params.d}
