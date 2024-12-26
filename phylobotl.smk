@@ -338,12 +338,12 @@ if config["tree_using"] == "ani":
             o=os.path.join(config["workdir"],config["output_dir"]), k="Annotations/GFF_files",
             g1=config["input"]["group_1_name"], l1=config["input"]["group_1_label"],
             g2=config["input"]["group_2_name"], l2=config["input"]["group_2_label"]
-    container: "docker://lfdelzam/phylobotl_r_image"
+#    container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     resources:
              runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
     shell:  """
-              Rscript support/phylobotl3.R -q {params.q} -l {params.l} -g {input.g} -N {input.n} \
+              Rscript support/phylobotl.R -q {params.q} -l {params.l} -g {input.g} -N {input.n} \
               -b {params.b} -a {params.a} -o {params.o} -r {params.r} -s {input.s} -m {input.m} \
               -i {input.i} -k {params.k} -y {params.g1} -w {params.l1} \
               -z {params.g2} -d {params.l2} -e {params.e} -p {threads}
@@ -369,10 +369,10 @@ else:
             o=os.path.join(config["workdir"],config["output_dir"]), k="Annotations/GFF_files",
             g1=config["input"]["group_1_name"], l1=config["input"]["group_1_label"],
             g2=config["input"]["group_2_name"], l2=config["input"]["group_2_label"]
-    container: "docker://lfdelzam/phylobotl_r_image"
+#    container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     shell:  """
-              Rscript support/phylobotl3.R -q {params.q} -l {params.l} -g {input.g} -t {input.t} -b {params.b} -a {params.a} \
+              Rscript support/phylobotl.R -q {params.q} -l {params.l} -g {input.g} -t {input.t} -b {params.b} -a {params.a} \
               -o {params.o} -r {params.r} -s {input.s} -m {input.m} -i {input.i} -k {params.k} \
               -y {params.g1} -w {params.l1} -z {params.g2} -d {params.l2} -e {params.e} -p {threads}
             """
@@ -400,10 +400,10 @@ rule vis_co:
     threads: config["threads"]
     resources:
              runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
-    container: "docker://lfdelzam/phylobotl_r_image"
+#    container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     shell:  """
-                Rscript support/synteny_visual2.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
+                Rscript support/synteny_visual.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
                 -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i}
             """
 
@@ -542,10 +542,10 @@ rule vis_co_depleted:
     threads: config["threads"]
     resources:
               runtime = lambda wildcards, attempt: attempt*60 *24, mem_mb=config["memory_per_cpu"]*config["threads"]
-    container: "docker://lfdelzam/phylobotl_r_image"
+#    container: "docker://lfdelzam/phylobotl_r_image"
     conda: "R_env"
     shell:  """
-                Rscript support/synteny_visual2.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
+                Rscript support/synteny_visual.R -a {input.a} -t {input.t} -e {input.e} -o {params.o} \
                 -l {params.l} -m {params.m} -s {params.s} -f {params.f} -i {params.i}
             """
 
