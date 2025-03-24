@@ -61,23 +61,7 @@ rule Genomes:
     threads: 1
     resources:
         runtime = lambda wildcards, attempt: attempt*60 * 4, mem_mb=config["memory_per_cpu"]	
-    shell:  """
-                cat {input} | while read line
-                        do
-                            if [[ "$line" != \#* ]]; then
-                                s=$(echo $line | cut -d ',' -f1)
-                                f=$(echo $line | cut -d ',' -f2)
-                                if [[ ! -s Genomes/$s.fa ]]; then
-                                  if [[ $f =~ \.gz$ ]]; then
-                                    gunzip -cd $f > Genomes/$s.fa
-                                  else
-                                    cp $f Genomes/$s.fa
-                                  fi
-                                fi
-                            fi
-                        done
-            """
-
+    shell: "python support/create_softlinks.py {input}" 
 
 if config["tree_using"] == "gtdb":
 	rule tree:
