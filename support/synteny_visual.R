@@ -279,7 +279,7 @@ find_co_locations <- function(genomesDF, max_loci = 40000, num_cores = parallel:
         i <- 1
         while (i < length(sdf_c$Orthologue)) {
           o <- sdf_c$Orthologue[i]
-          end1 <- max(sdf_c$end[sdf_c$Orthologue == o])
+          end1 <- max(na.omit(sdf_c$end[sdf_c$Orthologue == o]))
           sdf_bloq <- sdf_c %>% filter(end >= end1 & end <= max_loci + end1)
           
           if (length(sdf_bloq$Orthologue) > 1) {
