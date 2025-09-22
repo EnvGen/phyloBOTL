@@ -1,12 +1,12 @@
-workdir: /mnt/isilon/projects/ecosystem_biology/01_Infectome/phyloBOTL
+workdir: /abs/path/to/phyloBOTL
 threads: 24
 memory_per_cpu: 4571
 input:
   File_list: GENOME_LIST.txt
-  group_1_label: CRC
-  group_1_name: CRC
-  group_2_label: Oral
-  group_2_name: Oral
+  group_1_label: <label1>
+  group_1_name: <name2>
+  group_2_label: <label2>
+  group_2_name: <name2>
   Special_group_name: None
 tree_file: rooted_boot.treefile
 tree_using: iqtree
@@ -31,13 +31,13 @@ orthology:
   path_to_orthologs_sequences: Orthologues/Results_dir/Orthogroup_Sequences
 up_to_Eggnog_all_orthologs: True
 Eggnog_all_orthologs_selection: longest
-path_to_eggnog_db: /mnt/isilon/projects/ecosystem_biology/01_Infectome/phyloBOTL/DATABASES/eggnog_mapper_env/data
+path_to_eggnog_db: /abs/path/to/eggnog_mapper_env/data
 PHYLOGLM:
   phyloglm_Bootnumber: 0
   p_adj_value_cutoff: 0.05
   orthologue_ratio_in_genome_dataset: 0.95
   phyloglm_btol_number: 10
-  phyloglm_outfiles_prefix: Vv
+  phyloglm_outfiles_prefix: <prefix>
 synteny_visualization:
   present_in_at_least_n_genomes: 10
   locus_size_window: 40000
