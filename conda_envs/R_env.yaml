@@ -12,3 +12,4 @@ dependencies:
   - pkg-config
   - r-matrix
   - r-mass
+  - r-ips
