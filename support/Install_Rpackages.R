@@ -6,7 +6,7 @@ if (!is.na(args[1]) && args[1] > 1 ) CPUS=args[1] else CPUS=1
 
 options(Ncpus = CPUS)
 #Packages to be installed
-CRAN_packages <- c("argparser","ape","tidyverse", "igraph","tidytree","gridExtra","future", "FactoMineR","phylolm", "factoextra","ggnewscale","randomcoloR",
+CRAN_packages <- c("argparser","logistf","ape","tidyverse", "igraph","tidytree","gridExtra","future", "FactoMineR","phylolm", "factoextra","ggnewscale","randomcoloR",
                    "cluster","umap","tidyr","phangorn","pheatmap", "vegan","ggrepel", "data.table", "RColorBrewer", "devtools", "readr", "BiocManager","randomForest","pROC")
 
 bioconduc_packages=c("ggtree")
