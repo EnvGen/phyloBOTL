@@ -3,13 +3,41 @@ name: R_env
 channels:
   - conda-forge
   - anaconda
+  - bioconda
 
 dependencies:
-  - r-base=4.2.2
+  - conda-forge::r-base
   - cmake
-  - r-remotes
+  - conda-forge::r-remotes
   - libgit2
   - pkg-config
-  - r-matrix
-  - r-mass
-  - r-ips
+  - conda-forge::r-matrix
+  - conda-forge::r-mass
+  - conda-forge::r-ips
+  - conda-forge::r-phangorn
+  - conda-forge::r-logistf
+  - conda-forge::r-ape
+  - conda-forge::r-tidyverse
+  - conda-forge::r-argparser
+  - conda-forge::r-igraph
+  - conda-forge::r-tidytree
+  - conda-forge::r-gridextra
+  - conda-forge::r-future
+  - conda-forge::r-phylolm
+  - conda-forge::r-pheatmap
+  - conda-forge::r-vegan
+  - conda-forge::r-tidyr
+  - conda-forge::r-factominer
+  - conda-forge::r-factoextra
+  - conda-forge::r-ggnewscale
+  - conda-forge::r-randomcolor
+  - conda-forge::r-data.table
+  - conda-forge::r-readr
+  - conda-forge::r-ggrepel
+  - conda-forge::r-rcolorbrewer
+  - conda-forge::r-cluster
+  - conda-forge::r-umap
+  - conda-forge::r-devtools
+  - conda-forge::r-biocmanager
+  - conda-forge::r-gggenomes
+  - bioconda::bioconductor-ggtree
